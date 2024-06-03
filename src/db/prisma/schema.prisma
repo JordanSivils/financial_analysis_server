@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+
+model Year {
+  id        Int                   @id @default(autoincrement())
+  name      String                @unique
+  quarters  Quarter[]
+}
+
+model Quarter {
+  id        Int                   @id @default(autoincrement())
+  name      String                
+  yearId    Int
+  year      Year                  @relation(fields: [yearId], references: [id])
+  months    Month[]
+  @@index([yearId])
+}
+
+model Month {
+  id        Int                    @id @default(autoincrement())
+  name      String                 
+  quarterId Int
+  quarter   Quarter                @relation(fields: [quarterId], references: [id])
+  workdays  Workdays[]
+  categorySummaries CategorySummary[]
+  subCategorySummaries SubCategorySummary[]
+  costPerDay CostPerDay[]
+  @@index([quarterId])
+}
+
+model Category {
+  id       Int                      @id @default(autoincrement())
+  name     String                   @unique
+  summaries CategorySummary[]
+  subcategories SubCategory[]
+  
+}
+
+model SubCategory {
+  id         Int                    @id @default(autoincrement())
+  name       String                 @unique
+  categoryId Int
+  category   Category               @relation(fields: [categoryId], references: [id])
+  summaries  SubCategorySummary[]
+  @@index([categoryId])
+}
+
+model CategorySummary {
+  id          Int                   @id @default(autoincrement())
+  categoryId  Int
+  monthId     Int
+  grossSales  Float
+  discounts   Float
+  netSales    Float
+  cost        Float
+  profit      Float
+  markup      Float
+  percentOfSales Float
+  quantity    Int
+  category    Category            @relation(fields: [categoryId], references: [id])
+  month       Month               @relation(fields: [monthId], references: [id])
+}
+
+model SubCategorySummary {
+  id             Int              @id @default(autoincrement())
+  subCategoryId  Int
+  monthId        Int
+  grossSales     Float
+  discounts      Float
+  netSales       Float
+  cost           Float
+  profit         Float
+  markup         Float
+  percentOfSales Float
+  quantity       Int
+  subCategory    SubCategory      @relation(fields: [subCategoryId], references: [id])
+  month          Month            @relation(fields: [monthId], references: [id])
+}
+
+model Workdays {
+  id       Int                    @id @default(autoincrement())
+  days     Int
+  monthId  Int
+  month    Month                  @relation(fields: [monthId], references: [id])
+}
+
+model CostPerDay {
+  id Int                          @id @default(autoincrement())
+  dailyCost Float
+  monthId Int
+  month Month                     @relation(fields: [monthId], references: [id])
+}
+
+model DailyDependentCost {
+  id Int @id @default(autoincrement())
+  name String
+  dailyCost Float
+}
+
+model MonthlyFixedCost {
+  id Int @id @default(autoincrement())
+  name String
+  monthlyCost Float
+}
